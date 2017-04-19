@@ -3,6 +3,10 @@ Django States
 
 |Build Status|
 
+Fork for my own use :
+tested only with python 3 and Django 1.11
+
+
 Description
 -----------
 
@@ -149,4 +153,3 @@ management command.
 
 This requires `graphviz <http://graphviz.org>`__ and python bindings for
 graphviz: ``pygraphviz``.
-
