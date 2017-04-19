@@ -122,5 +122,5 @@ class Command(BaseCommand):
         g.layout(options['layout'])
         format = options['format']
         logger.debug('Trying to render %s' % loc)
-        g.draw(loc + '.' + format, format='pdf')
+        g.draw(loc + '.' + format, format=options['format'])
         logger.info('Created state graph for %s at %s' % (name, loc))
