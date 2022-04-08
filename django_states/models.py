@@ -17,7 +17,7 @@ __all__ = ('StateMachine', 'StateDefinition', 'StateTransition', 'StateModel')
 
 from django.db import models
 from django.db.models.base import ModelBase
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from six import python_2_unicode_compatible
 
 from django_states.machine import StateMachine, StateDefinition, StateTransition
