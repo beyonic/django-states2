@@ -1,10 +1,10 @@
 language: python
-python: 3.9
+python:
+  - 3.6
+  - 3.9
 env:
-  - TOX_ENV=py36-dj32
-  - TOX_ENV=py36-dj40
-  - TOX_ENV=py39-dj32
-  - TOX_ENV=py39-dj40
+  - TOX_ENV=dj32
+  - TOX_ENV=dj40
 install:
   - pip install tox
 script:
