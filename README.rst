@@ -3,6 +3,10 @@ Django States
 
 |Build Status|
 
+Fork for my own use :
+tested only with python 3 and Django 1.11
+
+
 Description
 -----------
 
@@ -145,10 +149,7 @@ management command.
 
 .. code:: sh
 
-   python manage.py graph_states myapp.Purchase.state
+   python manage.py graph_states2 myapp.Purchase.purchase_state
 
 This requires `graphviz <http://graphviz.org>`__ and python bindings for
-graphviz: ``pygraphviz`` and ``yapgvb``.
-
-.. |Build Status| image:: https://travis-ci.org/vikingco/django-states2.svg?branch=fix%2F15403%2Fdebug-in_group-and-add-unittests
-   :target: https://travis-ci.org/vikingco/django-states2
+graphviz: ``pygraphviz``.

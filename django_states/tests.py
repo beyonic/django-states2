@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Tests"""
+from __future__ import absolute_import
 from django.contrib.auth import get_user_model
+
 from django.db import models
 from django.test import TransactionTestCase
 

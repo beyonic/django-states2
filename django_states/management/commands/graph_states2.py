@@ -1,54 +1,78 @@
+from __future__ import absolute_import
 import logging
 import os
 from optparse import make_option
-from yapgvb import Graph
+import pygraphviz as gvz
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models import get_model
+from django.apps import apps
+import six
 
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = '''Generates a graph of available state machines'''
-    option_list = BaseCommand.option_list + (
-        make_option('--layout', '-l', action='store', dest='layout', default='dot',
-            help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato twopi'),
-        make_option('--format', '-f', action='store', dest='format', default='pdf',
-            help='Format of the output file. Formats: pdf, jpg, png'),
-        make_option('--create-dot', action='store_true', dest='create_dot', default=False,
-            help='Create a dot file'),
-    )
-    args = '[model_label.field]'
-    label = 'model name, i.e. mvno.subscription.state'
+    def add_arguments(self, parser):
+        #Positionnal arguments
+        parser.add_argument('model_label', nargs='+', \
+         help='model name, i.e. mvno.subscription.state')
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--layout',
+            '-l',
+            action='store',
+            dest='layout',
+            default='dot',
+            help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato twopi')
+
+        parser.add_argument(
+            '--format',
+            '-f',
+            action='store',
+            dest='format',
+            default='pdf',
+            help='Format of the output file. Formats: pdf, jpg, png')
+
+        parser.add_argument(
+            '--create-dot',
+            action='store_true',
+            dest='create_dot',
+            default=False,
+            help='Create a dot file')
+
 
     def handle(self, *args, **options):
-        if len(args) < 1:
+        model_label_args = options.pop('model_label')
+        if len(model_label_args) < 1:
             raise CommandError('need one or more arguments for model_name.field')
 
-        for model_label in args:
+        for model_label in model_label_args:
             self.render_for_model(model_label, **options)
 
     def render_for_model(self, model_label, **options):
         app_label,model,field = model_label.split('.')
         try:
-            Model = get_model(app_label, model)
+            Model = apps.get_model(app_label, model)
         except LookupError:
             Model = None
         STATE_MACHINE = getattr(Model(), 'get_%s_machine' % field)()
 
-        name = unicode(Model._meta.verbose_name)
-        g = Graph('state_machine_graph_%s' % model_label, False)
+        name = six.text_type(Model._meta.verbose_name)
+
+        g = gvz.AGraph()
+        #Graph('state_machine_graph_%s' % model_label, False)
         g.label = 'State Machine Graph %s' % name
         nodes = {}
         edges = {}
 
         for state in STATE_MACHINE.states:
-            nodes[state] = g.add_node(state,
-                                      label=state.upper(),
-                                      shape='rect',
-                                      fontname='Arial')
+            g.add_node(state,label=state.upper(),
+                shape='rect',
+                fontname='Arial')
+
+            nodes[state] = g.get_node(state)
             logger.debug('Created node for %s', state)
 
         def find(f, a):
@@ -56,9 +80,10 @@ class Command(BaseCommand):
                 if f(i): return i
             return None
 
-        for trion_name,trion in STATE_MACHINE.transitions.iteritems():
+        for trion_name,trion in six.iteritems(STATE_MACHINE.transitions):
             for from_state in trion.from_states:
-                edge = g.add_edge(nodes[from_state], nodes[trion.to_state])
+                g.add_edge(nodes[from_state], nodes[trion.to_state])
+                edge = g.get_edge(nodes[from_state], nodes[trion.to_state])
                 edge.dir = 'forward'
                 edge.arrowhead = 'normal'
                 edge.label = '\n_'.join(trion.get_name().split('_'))
@@ -97,5 +122,5 @@ class Command(BaseCommand):
         g.layout(options['layout'])
         format = options['format']
         logger.debug('Trying to render %s' % loc)
-        g.render(loc + '.' + format, format, None)
+        g.draw(loc + '.' + format, format=options['format'])
         logger.info('Created state graph for %s at %s' % (name, loc))
