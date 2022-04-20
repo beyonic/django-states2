@@ -5,7 +5,7 @@ from __future__ import absolute_import
 __all__ = ('StateField',)
 
 from django.db import models
-from django.utils.functional import curry
+from functools import partial as curry
 from django_states.machine import StateMachine
 
 from django_states.model_methods import (get_STATE_transitions,
